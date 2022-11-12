@@ -50,6 +50,11 @@ public class Flight {
 		this.seatsLeft = plane.getCapacity();
 		this.passengers = passengers;
 	}
+
+	public Flight() {
+
+	}
+
 	public String getFlightNumber() {
 		return flightNumber;
 	}

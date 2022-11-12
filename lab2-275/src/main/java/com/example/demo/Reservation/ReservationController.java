@@ -32,7 +32,7 @@ public class ReservationController {
             @RequestParam("flightLists") List<Flight> flightLists,
             @RequestParam("departureDates") List<Date> departureDates,
             @RequestParam(value = "xml", required=false) String xml
-    ) {
+    ) throws JSONException {
         String responseType="json";
         if(xml != null && xml.equals("true")){ // ?xml=true
             responseType="xml";
@@ -41,7 +41,7 @@ public class ReservationController {
     }
 
     @RequestMapping(value="/reservation/{number}", method=RequestMethod.DELETE, produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<?> deleteReservation(@PathVariable int number, @RequestParam(value = "xml", required=false) String xml) {
+    public ResponseEntity<?> deleteReservation(@PathVariable int number, @RequestParam(value = "xml", required=false) String xml) throws JSONException {
         String responseType="json";
         if(xml != null && xml.equals("true")){ // ?xml=true
             responseType="xml";

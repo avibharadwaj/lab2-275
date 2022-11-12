@@ -4,6 +4,7 @@ import com.example.demo.Flight.Flight;
 import com.example.demo.Flight.FlightRepository;
 import com.example.demo.Passenger.Passenger;
 import com.example.demo.Passenger.PassengerRepository;
+import com.example.demo.Plane.Plane;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
@@ -28,7 +29,7 @@ public class ReservationService {
     @Autowired
     private FlightRepository flightRepository;
 
-    public ResponseEntity<?> addReservation(String passengerId, List<Flight> flightList, String responseType) {
+    public ResponseEntity<?> addReservation(String passengerId, List<Flight> flightList, String responseType) throws JSONException {
         System.out.println("inside addReservation()");
         Passenger passenger = passengerRepository.getById(passengerId);
 
@@ -40,11 +41,11 @@ public class ReservationService {
             List<Flight> passengerFlights=checkWithExistingPassengerReservations(passengerId, flightList);
             if(currentReservationFlights!=null){
                 return new ResponseEntity<>(generateErrorMessage("BadRequest", "404", "Sorry, the timings of flights: "
-                        +currentReservationFlights.get(0).getNumber() +" and "+ currentReservationFlights.get(1).getNumber()+" overlap" ), HttpStatus.NOT_FOUND);
+                        +currentReservationFlights.get(0).getFlightNumber() +" and "+ currentReservationFlights.get(1).getFlightNumber()+" overlap" ), HttpStatus.NOT_FOUND);
             }
             if(passengerFlights!=null){
                 return new ResponseEntity<>(generateErrorMessage("BadRequest", "404", "Sorry, the timings of flights: "
-                        +passengerFlights.get(0).getNumber() +" and "+ passengerFlights.get(1).getNumber()+" overlap" ), HttpStatus.NOT_FOUND);
+                        +passengerFlights.get(0).getFlightNumber() +" and "+ passengerFlights.get(1).getFlightNumber()+" overlap" ), HttpStatus.NOT_FOUND);
             }
             Flight fullFlight = checkSeats(flightList);
             if(fullFlight != null){
@@ -57,7 +58,7 @@ public class ReservationService {
             passenger.getReservation().add(reservation);
 
             for(Flight flight : flightList){
-                flight.getPassenger().add(passenger);
+                flight.getPassengers().add(passenger);
             }
             System.out.println("inside addReservation() if 1");
             reservationRepository.save(reservation);
@@ -131,7 +132,7 @@ public class ReservationService {
         // TODO Auto-generated method stub
 
         System.out.println("inside getReservation()");
-        Reservation reservation = reservationRepository.findOne(number);
+        Reservation reservation = reservationRepository.findById(number).get();
         if(reservation == null){
             System.out.println("inside getReservation() if");
 
@@ -156,7 +157,7 @@ public class ReservationService {
 
     public void addPassengerToFlight(Passenger passenger, List<Flight> flightList){
         for(Flight flight : flightList){
-            flight.getPassenger().add(passenger);
+            flight.getPassengers().add(passenger);
         }
     }
 
@@ -217,7 +218,7 @@ public class ReservationService {
             for(Flight flight : reservation.getFlights()){
                 arr[i++] =  flightToJSONString(flight);
                 price += flight.getPrice();
-                flight.getPassenger().add(passenger);
+                flight.getPassengers().add(passenger);
             }
             container.put("price", ""+price);
             flightsJSON.put("flight", arr);
@@ -235,11 +236,11 @@ public class ReservationService {
 
         try {
             System.out.println("inside flightToJSONString() try 1");
-            flightJSON.put("number", flight.getNumber());
+            flightJSON.put("number", flight.getFlightNumber());
             flightJSON.put("price", ""+flight.getPrice());
-            flightJSON.put("from", flight.getFromSource());
+            flightJSON.put("origin", flight.getOrigin());
             System.out.println("inside flightToJSONString() try 2");
-            flightJSON.put("to", flight.getFromSource());
+            flightJSON.put("destination", flight.getDestination());
             flightJSON.put("departureTime", flight.getDepartureTime());
             flightJSON.put("arrivalTime", flight.getArrivalTime());
             flightJSON.put("description", flight.getDescription());
@@ -267,10 +268,10 @@ public class ReservationService {
         return planeJSON;
     }
 
-    public ResponseEntity<?> deleteReservation(int number, String responseType) {
+    public ResponseEntity<?> deleteReservation(int number, String responseType) throws JSONException {
         System.out.println("inside deleteReservation()");
 
-        Reservation reservation = reservationRepository.findOne(number);
+        Reservation reservation = reservationRepository.findById(number).get();
         if(reservation == null){
             System.out.println("inside deleteReservation() if");
 
@@ -286,7 +287,7 @@ public class ReservationService {
             for(Flight flight : reservation.getFlights()){
                 System.out.println("deleteReservation() else for");
                 flight.setSeatsLeft(flight.getSeatsLeft()+1);
-                flight.getPassenger().remove(passenger);
+                flight.getPassengers().remove(passenger);
             }
 
             reservationRepository.delete(reservation);
@@ -303,7 +304,7 @@ public class ReservationService {
 
     public ResponseEntity<?> updateReservatonRemoveFlights(int number, List<Flight> removeFlights) {
         // TODO Auto-generated method stub
-        Reservation reservation = reservationRepository.findOne(number);
+        Reservation reservation = reservationRepository.findById(number).get();
 
         if(reservation == null){
             return  new ResponseEntity<>(generateErrorMessage("BadRequest", "404",
@@ -318,9 +319,9 @@ public class ReservationService {
         return null;
     }
 
-    public ResponseEntity<?> updateReservationAddFlights(int number, List<Flight> flightsAdded) {
+    public ResponseEntity<?> updateReservationAddFlights(int number, List<Flight> flightsAdded) throws JSONException {
         // TODO Auto-generated method stub
-        Reservation reservation = reservationRepository.findOne(number);
+        Reservation reservation = reservationRepository.findById(number).get();
         String passengerId=reservation.getPassenger().getId();
         if(checkCurrentreservationFlightsTimings(passengerId, flightsAdded)==null &&
                 checkWithExistingPassengerReservations(passengerId, flightsAdded)==null){
@@ -336,13 +337,13 @@ public class ReservationService {
             List<Flight> passengerFlights=checkWithExistingPassengerReservations(passengerId, flightsAdded);
             if(currentReservationFlights!=null){
                 return new ResponseEntity<>(XML.toString(new JSONObject(generateErrorMessage("BadRequest", "404",
-                        "Sorry, the timings of flights: "+currentReservationFlights.get(0).getNumber()
-                                +" and "+ currentReservationFlights.get(1).getNumber()+"overlap" ))), HttpStatus.NOT_FOUND);
+                        "Sorry, the timings of flights: "+currentReservationFlights.get(0).getFlightNumber()
+                                +" and "+ currentReservationFlights.get(1).getFlightNumber()+"overlap" ))), HttpStatus.NOT_FOUND);
             }
             if(passengerFlights!=null){
                 return new ResponseEntity<>(XML.toString(new JSONObject(generateErrorMessage("BadRequest", "404",
-                        "Sorry, the timings of flights: "+passengerFlights.get(0).getNumber() +" and "
-                                + passengerFlights.get(1).getNumber() + "overlap" ))), HttpStatus.NOT_FOUND);
+                        "Sorry, the timings of flights: "+passengerFlights.get(0).getFlightNumber() +" and "
+                                + passengerFlights.get(1).getFlightNumber() + "overlap" ))), HttpStatus.NOT_FOUND);
             }
             return  new ResponseEntity<>(generateErrorMessage("Response", "404", "Time Overlap Constraint Violated"),HttpStatus.NOT_FOUND);
 
@@ -354,14 +355,14 @@ public class ReservationService {
         for(Flight flight:flights){
             boolean flag=false;
             for(Flight currentFlight:flightList){
-                if(currentFlight.getNumber().equals(flight.getNumber())){
+                if(currentFlight.getFlightNumber().equals(flight.getFlightNumber())){
                     flag=true;
                 }
             }
             if(!flag)
                 return new ResponseEntity<>((generateErrorMessage("BadRequest", "404",
                         "Sorry, the requested flight with number "
-                                + flight.getNumber() + " does not exist")),HttpStatus.NOT_FOUND);
+                                + flight.getFlightNumber() + " does not exist")),HttpStatus.NOT_FOUND);
         }
         return null;
     }
@@ -369,19 +370,19 @@ public class ReservationService {
     public List<Flight> getFlights(String[] flight){
         List<Flight> flights=new ArrayList<Flight>();
         for(String currentFlightNumber:flight)
-            flights.add(flightRepository.findOne(currentFlightNumber));
+            flights.add(flightRepository.findByflightNumber(currentFlightNumber));
         return flights;
     }
 
     public ResponseEntity<?> checkFlightExistance(String flightNumber){
-        if( flightRepository.findOne(flightNumber)==null){
+        if( flightRepository.findByflightNumber(flightNumber)==null){
             return  new ResponseEntity<>(generateErrorMessage("Response", "404", "Flight with number "+flightNumber+" doesn't exist"),HttpStatus.NOT_FOUND);
 
         }
         return null;
     }
 
-    private ResponseEntity<?> getReservation(List<Reservation> reservationList, String responseType) {
+    private ResponseEntity<?> getReservation(List<Reservation> reservationList, String responseType) throws JSONException {
 
         if(reservationList == null || reservationList.size() == 0){
             return new ResponseEntity<>(generateErrorMessage("BadRequest", "200",
@@ -397,14 +398,14 @@ public class ReservationService {
         if(responseType.equals("json"))
             return  new ResponseEntity<>(outer,HttpStatus.OK);
         else
-            return  new ResponseEntity<>(XML.toString(new JSONObject(outer),HttpStatus.OK);
+            return  new ResponseEntity<>(XML.toString(outer), HttpStatus.OK);
 
     }
 
     public void helper(List<Reservation> reservations, List<Flight> numList, List<Flight> flight, String source){
 
         for(int i=0;i<flight.size();i++){
-            if(flight.get(i).getFromSource().equals(source))
+            if(flight.get(i).getOrigin().equals(source))
                 numList.add(flight.get(i));
         }
         reservations=(List<Reservation>) reservationRepository.findAll();
@@ -430,7 +431,7 @@ public class ReservationService {
     public void helper2(List<Reservation> reservations, List<Flight> numList, List<Flight> flight, String source){
 
         for(int i=0;i<flight.size();i++){
-            if(flight.get(i).getNumber().equals(source))
+            if(flight.get(i).getFlightNumber().equals(source))
                 numList.add(flight.get(i));
         }
         reservations=(List<Reservation>) reservationRepository.findAll();

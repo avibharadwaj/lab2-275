@@ -1,19 +1,20 @@
 package com.example.demo.Passenger;
-import java.util.*;
-import javax.persistence.*;
 
-import com.example.demo.Passenger.*;
-import com.example.demo.Flight.*;
-import com.example.demo.Reservation.*;
-import org.springframework.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.example.demo.Flight.Flight;
+import com.example.demo.Plane.Plane;
+import com.example.demo.Reservation.Reservation;
+import com.example.demo.Reservation.ReservationRepository;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
+import java.util.List;
 
+@Service
 public class PassengerServices {
 
 	@Autowired
@@ -23,7 +24,7 @@ public class PassengerServices {
 	private ReservationRepository reservationRepository;
 	
 
-	public ResponseEntity<?> getPassengers(String id, String responseType) {
+	public ResponseEntity<?> getPassengers(String id, String responseType) throws JSONException {
 		System.out.println("---Returning passenger by Id---");
 		System.out.println("getPassenger()");
 		Passenger passenger = passengerRepository.getById(id);
@@ -123,7 +124,7 @@ public class PassengerServices {
 
 	}
 	
-	public ResponseEntity<?> deletePassenger(String id){
+	public ResponseEntity<?> deletePassenger(String id) throws JSONException {
 		System.out.println("---Deleting a Passenger by Id---");
 		Passenger passenger = passengerRepository.getById(id);
 		if(passenger == null){
@@ -170,7 +171,7 @@ public class PassengerServices {
 			for(Flight flight : reservation.getFlights()){
 				System.out.println("deleteReservation() else for");
 				updateFlightSeats(flight);
-				flight.getPassenger().remove(passenger);
+				flight.getPassengers().remove(passenger);
 			}
 			
 			System.out.println("deleteReservation() before delete");
@@ -219,16 +220,16 @@ public class PassengerServices {
 			result.put("passenger", fields);
 			
 			fields.put("id", ""+passenger.getId());
-			fields.put("firstname", passenger.getFirstname());
-			fields.put("lastname", passenger.getLastname());
-			fields.put("age", ""+passenger.getAge());
+			fields.put("firstname", passenger.getFirstName());
+			fields.put("lastname", passenger.getLastName());
+			fields.put("age", ""+passenger.getBirthYear());
 			fields.put("gender", passenger.getGender());
 			fields.put("phone", passenger.getPhone());
 			
 			System.out.println("id "+passenger.getId());
-			System.out.println("firstname "+passenger.getFirstname());
-			System.out.println("lastname "+passenger.getLastname());
-			System.out.println("age "+passenger.getAge());
+			System.out.println("firstname "+passenger.getFirstName());
+			System.out.println("lastname "+passenger.getLastName());
+			System.out.println("age "+passenger.getBirthYear());
 			System.out.println("gender "+passenger.getGender());
 			System.out.println("phone "+passenger.getPhone());
 			
@@ -290,11 +291,11 @@ public class PassengerServices {
 		try {
 			System.out.println("inside flightToJSONString() try 1");
 			json.put("flight", flightJSON);
-			flightJSON.put("number", flight.getNumber());
+			flightJSON.put("number", flight.getFlightNumber());
 			flightJSON.put("price", ""+flight.getPrice());
-			flightJSON.put("from", flight.getFromSource());
+			flightJSON.put("from", flight.getOrigin());
 			System.out.println("inside flightToJSONString() try 2");
-			flightJSON.put("to", flight.getFromSource());
+			flightJSON.put("to", flight.getDestination());
 			flightJSON.put("departureTime", flight.getDepartureTime());
 			flightJSON.put("arrivalTime", flight.getArrivalTime());
 			flightJSON.put("description", flight.getDescription());
