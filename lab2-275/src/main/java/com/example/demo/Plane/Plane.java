@@ -6,8 +6,11 @@ import javax.persistence.Id;
 @Entity
 public class Plane {
 
+	@Id
+	private String id;
+	
 
-    private String model;
+	private String model;
     private int capacity;
     private String manufacturer;
     private int yearOfManufacture;
