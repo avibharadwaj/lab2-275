@@ -7,96 +7,107 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Date;
 import java.util.List;
+import javax.transaction.Transactional;
 
 @RestController
+@RequestMapping(value = "/reservation")
 public class ReservationController {
 
     @Autowired
     private ReservationService reservationService;
 
-    @RequestMapping(value="/reservation/{number}", method= RequestMethod.GET, produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<?> getReservation(@PathVariable int number, @RequestParam(value = "xml", required=false) String xml) throws JSONException {
-        String responseType="json";
-        if(xml != null && xml.equals("true")){ // ?xml=true
-            responseType="xml";
+    @Transactional
+    @GetMapping(value = "/{number}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<?> getReservation(@PathVariable int number, @RequestParam(value = "xml", required = false) String xml) throws JSONException {
+        String responseType = "json";
+        if (xml != null && xml.equals("true")) {
+            responseType = "xml";
         }
         return reservationService.getReservation(number, responseType);
     }
-
-    @RequestMapping(value="/reservation", method=RequestMethod.POST, produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})// Chaged it form Applicatiion_JSON
-    public ResponseEntity<?> addReservation(
+    
+    @Transactional
+    @PostMapping(produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<?> makeReservation(
             @RequestParam String passengerId,
-            @RequestParam("flightLists") List<Flight> flightLists,
-            @RequestParam("departureDates") List<Date> departureDates,
-            @RequestParam(value = "xml", required=false) String xml
+            @RequestParam("flightLists") String flightListStr,
+            @RequestParam("departureDates") String departureDatesStr,
+            @RequestParam(value = "xml", required = false) String xml
     ) throws JSONException {
-        String responseType="json";
-        if(xml != null && xml.equals("true")){ // ?xml=true
-            responseType="xml";
+        String responseType = "json";
+        if (xml != null && xml.equals("true")) {
+            responseType = "xml";
         }
-        return reservationService.addReservation(passengerId, flightLists, responseType);
+
+        String[] flightsList = new String[0];
+        String[] departureDates = new String[0];
+        if (flightListStr != null) {
+            flightsList = flightListStr.split(",");
+        }
+        if (departureDatesStr != null) {
+            departureDates = departureDatesStr.split(",");
+        }
+
+        return reservationService.addReservation(passengerId, flightsList, responseType, departureDates);
     }
 
-    @RequestMapping(value="/reservation/{number}", method=RequestMethod.DELETE, produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<?> deleteReservation(@PathVariable int number, @RequestParam(value = "xml", required=false) String xml) throws JSONException {
-        String responseType="json";
-        if(xml != null && xml.equals("true")){ // ?xml=true
-            responseType="xml";
+    @Transactional
+    @DeleteMapping(value = "/{number}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<?> cancelReservation(@PathVariable int number, @RequestParam(value = "xml", required = false) String xml) throws JSONException {
+        String responseType = "json";
+        if (xml != null && xml.equals("true")) {
+            responseType = "xml";
         }
-        return reservationService.deleteReservation(number, responseType);
+        return reservationService.cancelReservation(number, responseType);
     }
 
-    @RequestMapping(value="/reservation/{number}", method=RequestMethod.POST, produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
-    public ResponseEntity<?> updateReservaton(
+    @Transactional
+    @PutMapping(value = "/{number}", produces = {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+    public ResponseEntity<?> updateReservation(
             @PathVariable int number,
-            @RequestParam(value="flightsAdded", required=false) String flightsAdded,
-            @RequestParam(value="flightsRemoved", required=false) String flightsRemoved,
-            @RequestParam(value = "xml", required=false) String xml) throws JSONException {
+            @RequestParam(value = "flightsAdded", required = false) String flightsAddedStr,
+            @RequestParam(value = "flightsRemoved", required = false) String flightsRemovedStr,
+            @RequestParam(value = "departureDatesAdded", required = false) String departureDatesAddedStr,
+            @RequestParam(value = "departureDatesRemoved", required = false) String departureDatesRemovedStr,
+            @RequestParam(value = "xml", required = false) String xml) throws JSONException {
 
-        String responseType="json";
+        String responseType = "json";
 
-        if(xml != null && xml.equals("true")){ // ?xml=true
-            responseType="xml";
+        if (xml != null && xml.equals("true")) {
+            responseType = "xml";
         }
 
-        List<Flight> flightAddedObects=null;
-        List<Flight> flightRemovedObects=null;
-
-        if(flightsAdded!=null){
-            String[] flightsAddedList=flightsAdded.split(",");
-            for(String s: flightsAddedList){
-                if(reservationService.checkFlightExistance(s)!=null){
-                    return reservationService.checkFlightExistance(s);
+        List<Flight> addedFlights = null;
+        if (flightsAddedStr != null) {
+            String[] flightsAddedList = flightsAddedStr.split(",");
+            for (String s : flightsAddedList) {
+                if (reservationService.iSFlightExist(s) != null) {
+                    return reservationService.iSFlightExist(s);
                 }
             }
-            flightAddedObects=reservationService.getFlights(flightsAddedList);
-
+            addedFlights = reservationService.getFlights(flightsAddedList);
+        }
+        if (addedFlights != null) {
+            ResponseEntity<?> res = reservationService.removeFlightUpdate(number, addedFlights);
+            if (res != null)
+                return res;
         }
 
-        if(flightsRemoved!=null){
-            String[] flightsRemovedList=flightsRemoved.split(",");
-
-            for(String s: flightsRemovedList){
-                if(reservationService.checkFlightExistance(s)!=null){
-                    return reservationService.checkFlightExistance(s);
+        List<Flight> removedFlights = null;
+        if (flightsRemovedStr != null) {
+            String[] flightsRemovedList = flightsRemovedStr.split(",");
+            for (String s : flightsRemovedList) {
+                if (reservationService.iSFlightExist(s) != null) {
+                    return reservationService.iSFlightExist(s);
                 }
-                flightRemovedObects=reservationService.getFlights(flightsRemovedList);
+                removedFlights = reservationService.getFlights(flightsRemovedList);
             }
         }
-
-        if(flightRemovedObects != null){
-            ResponseEntity<?> obj = reservationService.updateReservatonRemoveFlights(number, flightRemovedObects);
-            if(obj != null) return obj;
-        }
-
-        if(flightAddedObects!=null){
-            ResponseEntity<?> response = reservationService.updateReservationAddFlights(number, flightAddedObects);
-            if(response.getStatusCode() == HttpStatus.NOT_FOUND){
-                System.out.print("inside if of updateReservation() ");
-                return response;
+        if (removedFlights != null) {
+            ResponseEntity<?> res = reservationService.addFlightUpdate(number, removedFlights);
+            if (res.getStatusCode() == HttpStatus.NOT_FOUND) {
+                return res;
             }
         }
         return reservationService.getReservation(number, responseType);

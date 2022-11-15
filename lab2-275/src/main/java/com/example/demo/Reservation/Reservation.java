@@ -39,12 +39,6 @@ public class Reservation {
 
     }
 
-    public Reservation(int i, Passenger passenger, List<Flight> flightList) {
-        this.origin = origin;
-        this.destination = destination;
-        this.passenger = passenger;
-    }
-
     public int getGenOrderNumber() {
         return genOrderNumber;
     }

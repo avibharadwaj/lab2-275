@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping(value="/passenger")
 public class PassengerController {
 	
 	@Autowired
@@ -16,13 +17,12 @@ public class PassengerController {
 	
 	//Get Passenger
 	@Transactional
-	@RequestMapping(value="/passenger/{id}", method=RequestMethod.GET, produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
+	@GetMapping(value="/{id}", produces={MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> getPassenger(@PathVariable String id, 
-			@RequestParam(value = "xml", required=false) String xml) throws JSONException {
+		@RequestParam(value = "xml", required=false) String xml) throws JSONException {
 		
 		String responseType="json";
-		
-		if(xml != null && xml.equals("true")){ // ?xml=true
+		if(xml != null && xml.equals("true")){ 
 			responseType="xml";
 		}
 		
@@ -31,38 +31,43 @@ public class PassengerController {
 	
 	//Create a Passenger
 	@Transactional
-	@RequestMapping(value="/passenger", method=RequestMethod.POST, produces= {MediaType.APPLICATION_JSON_VALUE})
+	@PostMapping(produces= {MediaType.APPLICATION_JSON_VALUE,MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> createPassenger(
 			@RequestParam("firstname") String firstname,
 			@RequestParam("lastname") String lastname,
 			@RequestParam("gender") String gender,
 			@RequestParam("phone") String phone,
-			@RequestParam("birthyear") int birthyear) {
-		
-				ResponseEntity<?> res= passengerServices.createPassenger(firstname, lastname, birthyear, gender, phone);
-				
-				return res;
-		
+			@RequestParam("birthyear") int birthyear,
+			@RequestParam(value = "xml", required=false) String xml) throws JSONException {
+			String responseType="json";
+			if(xml != null && xml.equals("true")){ 
+				responseType="xml";
+			}
+			ResponseEntity<?> res= passengerServices.createPassenger(firstname, lastname, birthyear, gender, phone, responseType);
+			return res;	
 	}
 	
 	//Update a Passenger
 	@Transactional
-	@RequestMapping(value="/passenger/{id}", method=RequestMethod.PUT, produces=MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value="/{id}",produces= {MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE})
 	public ResponseEntity<?> updatePassenger(
 			@PathVariable String id, 
 			@RequestParam("firstname") String firstname,
 			@RequestParam("lastname") String lastname,
 			@RequestParam("birthyear") int birthyear,
 			@RequestParam("gender") String gender,
-			@RequestParam("phone") String phone
-			) {
-		
-		 return passengerServices.updatePassenger(id, firstname, 
-				lastname, birthyear, gender, phone);
+			@RequestParam("phone") String phone,
+			@RequestParam(value = "xml", required=false) String xml) throws JSONException {
+			String responseType="json";
+			if(xml != null && xml.equals("true")){ 
+				responseType="xml";
+			}		
+		 	return passengerServices.updatePassenger(id, firstname, lastname, birthyear, gender, phone, responseType);
 	}
+	
 	//Delete a Passenger
 	@Transactional
-	@RequestMapping(value="/passenger/{id}", method=RequestMethod.DELETE, produces=MediaType.APPLICATION_JSON_VALUE)
+	@DeleteMapping(value="/{id}",produces=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> deletePassenger(@PathVariable String id) throws JSONException {
 		return passengerServices.deletePassenger(id);
 	}

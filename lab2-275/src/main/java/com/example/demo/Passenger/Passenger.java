@@ -19,11 +19,11 @@ public class Passenger {
 	private String id;   // primary key
     private String firstname;
     private String lastname;
-    private int birthyear;  // Full form only (see definition below)
-    private String gender;  // Full form only
-    private String phone; // Phone numbers must be unique.   Full form only
+    private int birthyear;  
+    private String gender;  
+    private String phone;
     @OneToMany(targetEntity=Reservation.class,cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Reservation> reservations;   // Full form only
+    private List<Reservation> reservations;
 	@ManyToMany(targetEntity=Flight.class,cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	private List<Flight> flights;
     

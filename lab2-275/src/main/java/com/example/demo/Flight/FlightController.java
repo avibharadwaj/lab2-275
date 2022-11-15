@@ -16,20 +16,24 @@ public class FlightController {
 	public ResponseEntity<?> addFlight(@PathVariable String flightNumber,
 			@PathVariable String departureDate,
 			@RequestParam("price") int price,
-			@RequestParam("from") String from,
 			@RequestParam("to") String to,
-			@RequestParam("departureTime") String departureTime,
 			@RequestParam("arrivalTime") String arrivalTime,
-			@RequestParam("description") String description,
+			@RequestParam("from") String from,
 			@RequestParam("capacity") int capacity,
-			@RequestParam("model") String model,
+			@RequestParam("departureTime") String departureTime,
+			@RequestParam("description") String description,
 			@RequestParam("yearOfManufacture") int yearOfManufacture,
-			@RequestParam("manufacturer") String manufacturer){
+			@RequestParam("model") String model,
+			@RequestParam("manufacturer") String manufacturer,
+			@RequestParam(value="xml", required=false) String xml){
 		
-		System.out.println("addFlight()#################");
+		String responseType = "json";
+		if(xml != null && xml.equals("true")){
+			responseType = "xml";
+		}
 		return flightService.addFlight(flightNumber, price, from, to, departureDate,
 				departureTime, arrivalTime, description, capacity,
-				model, yearOfManufacture, manufacturer);
+				model, yearOfManufacture, manufacturer,responseType);
 	}
 	
 	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
@@ -43,21 +47,8 @@ public class FlightController {
 			responseType = "xml";
 		}
 		return flightService.getFlight(flightNumber, responseType);
-		
-		//else
-		//	return (new ResponseEntity<>("{\"BadRequest\":{"
-		//			+ "\"code\":\"404\","
-		//		+ "\"msg\":\"Please provide json=true or xml=true\"}}",HttpStatus.NOT_FOUND));
-			
 	}
 	
-	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.DELETE, produces=MediaType.APPLICATION_JSON_VALUE)
-	@Transactional
-	public String deleteFlight(@PathVariable String flightNumber,@PathVariable String departureDate){
-		
-		return flightService.deleteFlight(flightNumber);
-	}
-
 	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.PUT, produces=MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public ResponseEntity<?> updateFlight(@PathVariable String flightNumber,
@@ -77,5 +68,19 @@ public class FlightController {
 				departureTime, arrivalTime, description, capacity,
 				model, yearOfManufacture, manufacturer);
 	}
+	
+	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.DELETE, produces=MediaType.APPLICATION_JSON_VALUE)
+	@Transactional
+	public String deleteFlight(@PathVariable String flightNumber,@PathVariable String departureDate, @RequestParam(value="xml", required=false) String xml){
+		
+		String responseType = "json";
+		if(xml != null && xml.equals("true")){
+			responseType = "xml";
+		}
+		
+		return flightService.deleteFlight(flightNumber,responseType);
+	}
+
+	
 
 }
