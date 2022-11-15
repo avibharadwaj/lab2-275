@@ -6,6 +6,7 @@ import com.example.demo.Flight.*;
 @Entity
 public class Passenger {
 	@Id
+	private int genId;
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;   // primary key
     private String firstname;
