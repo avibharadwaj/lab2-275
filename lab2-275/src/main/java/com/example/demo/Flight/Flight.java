@@ -37,12 +37,13 @@ public class Flight {
     @Column(name = "passlist")
     private List<Passenger> passengers;    // Full form only
 	
-    public Flight(String flightNumber, int price, String from, String to, Date departure, Date arrival,
+    public Flight(String flightNumber, int price, String from, String to, Date departureDate, Date departure, Date arrival,
 			String description, ArrayList<Passenger> passengers, Plane plane) {
     	this.flightNumber = flightNumber;
 		this.price = price;
 		this.origin = from;
 		this.destination = to;
+		this.departureDate = departureDate;
 		this.departureTime = departure;
 		this.arrivalTime = arrival;
 		this.description = description;

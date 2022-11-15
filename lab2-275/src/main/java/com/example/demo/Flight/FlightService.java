@@ -42,7 +42,7 @@ public class FlightService {
 			String arrivalTime, String description, int capacity, String model, int yearOfManufacture,
 			String manufacturer) {
 		
-		Date departure = null, arrival = null;
+		Date departure = null, arrival = null, dateD =null;
 		try {
 			System.out.println("inside addFlight()");
 			if(flightRepository.findByflightNumber(flightNumber)!=null)
@@ -50,18 +50,24 @@ public class FlightService {
 						description, capacity, model, yearOfManufacture, manufacturer);
 			//DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");  
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH");
-
+			DateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+			System.out.println("inside add");
 			
 				departure = dateFormat.parse(departureTime);
 				arrival = dateFormat.parse(arrivalTime);
+				dateD = dateFormat1.parse(departureDate);
+				System.out.println("inside add2");
 				
 				if((departure).compareTo(arrival)>0){
 					return  new ResponseEntity<>(generateErrorMessage("BadRequest", "400", 
 							"Sorry, the departure time cannot be greater than the arrival time"), 
 							HttpStatus.BAD_REQUEST);
 				}
-				
-				if((departureTime.substring(0, departureTime.length()-3)) != (departureDate)){
+				System.out.println("datetimne"+departureTime.substring(0, departureTime.length()-3));
+				System.out.println("date"+departureDate);
+				System.out.println("equals"+(departureTime.substring(0, departureTime.length()-3)).equals(departureDate));
+				if(((departureTime.substring(0, departureTime.length()-3)).equals(departureDate)) != true){
+					System.out.println("EXCEPT");
 					return  new ResponseEntity<>(generateErrorMessage("BadRequest", "400", 
 							"Sorry, the departure Time and departure Date are not on the same day"), 
 							HttpStatus.BAD_REQUEST);
@@ -72,13 +78,13 @@ public class FlightService {
 			
 			Plane plane = new Plane(model, capacity, manufacturer, yearOfManufacture);
 			//plane.setNumber(flightNumber);
-			Flight flight = new Flight(flightNumber, price, from, to, departure, arrival, description, new ArrayList<Passenger>(), plane);
+			Flight flight = new Flight(flightNumber, price, from, to, dateD, departure, arrival, description, new ArrayList<Passenger>(), plane);
 			
 			flightRepository.save(flight);
 		
 		} catch (Exception e) {
 			System.out.println("EXCEPTION########");
-			
+			System.out.println(e);
 			return  new ResponseEntity<>(generateErrorMessage("BadRequest", "400", 
 					"Sorry, there was some problem."), 
 					HttpStatus.BAD_REQUEST);
@@ -210,7 +216,7 @@ public class FlightService {
 			
 			if(departure.compareTo(arrival)>=0)
 				return  new ResponseEntity<>(generateErrorMessage("BadRequest", "404", "Sorry, the departure time cannot be greater than the arrival time") ,HttpStatus.NOT_FOUND);
-			if((departureTime.substring(0, departureTime.length()-3)) != (departureDate)){
+			if(((departureTime.substring(0, departureTime.length()-3)).equals(departureDate)) != true){
 				return  new ResponseEntity<>(generateErrorMessage("BadRequest", "400", 
 						"Sorry, the departure Time and departure Date are not on the same day"), 
 						HttpStatus.BAD_REQUEST);
@@ -306,6 +312,7 @@ public class FlightService {
 			flightJSON.put("price", ""+flight.getPrice());
 			flightJSON.put("from", flight.getOrigin());
 			flightJSON.put("to", flight.getDestination());
+			flightJSON.put("departureDate", flight.getDepartureDate());
 			flightJSON.put("departureTime", flight.getDepartureTime());
 			flightJSON.put("arrivalTime", flight.getArrivalTime());
 			flightJSON.put("description", flight.getDescription());
