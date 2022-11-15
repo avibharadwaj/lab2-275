@@ -1,15 +1,13 @@
 package com.example.demo.Plane;
 
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-@Entity
+@Embeddable
 public class Plane {
 
-	@Id
-	private String id;
 	
-
 	private String model;
     private int capacity;
     private String manufacturer;

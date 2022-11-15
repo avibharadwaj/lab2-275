@@ -30,7 +30,8 @@ public class Flight {
     private int seatsLeft; 
     private String description;   // Full form only
     
-    @OneToOne(targetEntity=Plane.class, cascade=CascadeType.ALL)
+   // @OneToOne(targetEntity=Plane.class, cascade=CascadeType.ALL)
+    @Embedded
     private Plane plane;  // Embedded,    Full form only
     
     @ManyToMany(targetEntity=Passenger.class)

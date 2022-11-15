@@ -208,12 +208,12 @@ public class FlightService {
 		Flight flight = flightRepository.findById(flightNumber).orElse(null);;
 		System.out.println("CHECKK MEEE:"+flight.getFlightNumber());
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH");
-		
-		Date departure = null, arrival = null ;
+		DateFormat dateFormat1 = new SimpleDateFormat("yyyy-MM-dd");
+		Date departure = null, arrival = null ,dateD =null;
 		try {
 			departure = dateFormat.parse(departureTime);
 			arrival = dateFormat.parse(arrivalTime);
-			
+			dateD = dateFormat1.parse(departureDate);
 			if(departure.compareTo(arrival)>=0)
 				return  new ResponseEntity<>(generateErrorMessage("BadRequest", "404", "Sorry, the departure time cannot be greater than the arrival time") ,HttpStatus.NOT_FOUND);
 			if(((departureTime.substring(0, departureTime.length()-3)).equals(departureDate)) != true){
