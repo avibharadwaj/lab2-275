@@ -6,9 +6,17 @@ import com.example.demo.Flight.*;
 @Entity
 public class Passenger {
 	@Id
-	private int genId;
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;   // primary key
+	private int genId;
+    public int getGenId() {
+		return genId;
+	}
+
+	public void setGenId(int genId) {
+		this.genId = genId;
+	}
+
+	private String id;   // primary key
     private String firstname;
     private String lastname;
     private int birthyear;  // Full form only (see definition below)

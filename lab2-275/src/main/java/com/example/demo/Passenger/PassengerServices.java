@@ -27,7 +27,8 @@ public class PassengerServices {
 	public ResponseEntity<?> getPassengers(String id, String responseType) throws JSONException {
 		System.out.println("---Returning passenger by Id---");
 		System.out.println("getPassenger()");
-		Passenger passenger = passengerRepository.getById(id);
+		Passenger passenger = passengerRepository.findById(Integer.parseInt(id)).get();
+		System.out.println("Value retrieved");
 		
 		
 		if(passenger != null){
@@ -57,7 +58,7 @@ public class PassengerServices {
 			passengerRepository.save(newPassenger);
 			System.out.println("New User");
 			try {
-				newPassenger.setId(""+newPassenger.getId());
+				newPassenger.setId(""+newPassenger.getGenId());
 				passengerJSON.put("passenger", json);
 				
 				json.put("id", newPassenger.getId());
@@ -95,7 +96,7 @@ public class PassengerServices {
 
 		try{
 			Passenger tempPassenger=passengerRepository.getByPhone(phone);
-			if(tempPassenger != null && tempPassenger.getId() != id)
+			if(tempPassenger != null && !tempPassenger.getId().equals(id))
 				return  new ResponseEntity<>(generateErrorMessage("BadRequest", "404", 
 						"Sorry, the passenger with phone number "+tempPassenger.getPhone()
 						+" already exists in the DB!" ),HttpStatus.NOT_FOUND);
