@@ -11,13 +11,13 @@ public class FlightController {
 	
 	@Autowired
 	private FlightService flightService;
-	@RequestMapping(value = "/flight/{flightNumber}", method = RequestMethod.POST, produces=MediaType.APPLICATION_XML_VALUE)
+	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.POST, produces=MediaType.APPLICATION_XML_VALUE)
 	@Transactional
 	public ResponseEntity<?> addFlight(@PathVariable String flightNumber,
+			@PathVariable String departureDate,
 			@RequestParam("price") int price,
 			@RequestParam("from") String from,
 			@RequestParam("to") String to,
-			@RequestParam("departureDate") String departureDate,
 			@RequestParam("departureTime") String departureTime,
 			@RequestParam("arrivalTime") String arrivalTime,
 			@RequestParam("description") String description,
@@ -32,10 +32,10 @@ public class FlightController {
 				model, yearOfManufacture, manufacturer);
 	}
 	
-	@RequestMapping(value = "/flight/{flightNumber}", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.GET, produces=MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public ResponseEntity<?> getFlight(
-			@PathVariable String flightNumber, 
+			@PathVariable String flightNumber, @PathVariable String departureDate,
 			@RequestParam(value="xml", required=false) String xml){
 		
 		String responseType = "json";
@@ -51,20 +51,20 @@ public class FlightController {
 			
 	}
 	
-	@RequestMapping(value = "/flight/{flightNumber}", method = RequestMethod.DELETE, produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.DELETE, produces=MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
-	public String deleteFlight(@PathVariable String flightNumber){
+	public String deleteFlight(@PathVariable String flightNumber,@PathVariable String departureDate){
 		
 		return flightService.deleteFlight(flightNumber);
 	}
 
-	@RequestMapping(value = "/flight/{flightNumber}", method = RequestMethod.PUT, produces=MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/flight/{flightNumber}/{departureDate}", method = RequestMethod.PUT, produces=MediaType.APPLICATION_JSON_VALUE)
 	@Transactional
 	public ResponseEntity<?> updateFlight(@PathVariable String flightNumber,
+			@PathVariable String departureDate,
 			@RequestParam("price") int price,
 			@RequestParam("from") String from,
 			@RequestParam("to") String to,
-			@RequestParam("departureDate") String departureDate,
 			@RequestParam("departureTime") String departureTime,
 			@RequestParam("arrivalTime") String arrivalTime,
 			@RequestParam("description") String description,
